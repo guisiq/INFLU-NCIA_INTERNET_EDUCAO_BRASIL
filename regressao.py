@@ -101,7 +101,7 @@ def violinePlot(df,qtClasses,
 	plt.xlabel(axis[0])
 	plt.ylabel(axis[1])
 	if tituloGrafico != False:
-		plt.title = tituloGrafico 
+		plt.title(tituloGrafico) 
 		plt.show()
 		plt.savefig(tituloGrafico,transparent = True)
 # %% [markdown]
@@ -144,9 +144,22 @@ X = df[['densidade']].to_numpy()
 metricasNaoNormalizadas = Regressao(X,y,True,'taxa aprovação X densidade de conexao',('taxa aprovação','densidade de conexao'))
 violinePlot(df = dfB,
 			qtClasses=30,
-			tituloGrafico="taxa aprovação X densidade de conexao distribuicao",axis=("densidade de conexao","taxa aprovação ")
+			tituloGrafico="taxa aprovação X densidade de conexao distribuicao",
+			axis=("densidade de conexao","taxa aprovação ")
 			)
-# violinePlot(df = df,
-# 			qtClasses = 10,
-# 			tituloGrafico = "taxa aprovação X densidade de conexao distribuicao",axis=("densidade de conexao","taxa aprovação ")
-# 			xlabel = "")
+violinePlot(df = dfB,
+			qtClasses = 30,
+			tituloGrafico = "indicador rendimento X densidade de conexao distribuicao",
+			axis=("densidade de conexao","taxa aprovação "),
+			yLabel = "indicador_rendimento")
+violinePlot(df = dfB,
+			qtClasses = 30,
+			tituloGrafico = "indicador rendimento X densidade de conexao distribuicao",
+			axis=("densidade de conexao","nota saeb matematica"),
+			yLabel = "nota_saeb_matematica")
+violinePlot(df = dfB,
+			qtClasses = 30,
+			tituloGrafico = "nota saeb lingua portuguesa X densidade de conexao distribuicao",
+			axis=("densidade de conexao","nota saeb lingua portuguesa "),
+			yLabel = "nota_saeb_lingua_portuguesa")
+# %%
