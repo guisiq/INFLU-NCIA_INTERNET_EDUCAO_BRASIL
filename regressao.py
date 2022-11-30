@@ -62,7 +62,7 @@ def Regressao(X , y , imprimirMetricas = False ,tituloGrafico = False,axis = ('x
 		# plt.text(str(metricas))
 		# anchored_text = AnchoredText(str(metricas), loc=2)
 		# plt.ax.add_artist(anchored_text)
-		plt.show()
+		# plt.show()
 		plt.savefig(tituloGrafico,transparent = True)
 	return metricas
 # %%
@@ -78,7 +78,7 @@ def violinePlot(df,
 				yLabel = "taxa_aprovacao",
 				normalizar = False):
 	
-	if(tituloGrafico):	
+	if(tituloGrafico == True):	
 		tituloGrafico = axis[0] +" X "+axis[1]
 	
 	df = df[(np.isnan(df[yLabel]) !=True) & (np.isnan(df[xLabel]) !=True) ]  
@@ -141,9 +141,9 @@ def violinePlot(df,
 
 		arr = df[(df[xLabel] < maxClasse) & (df[xLabel] > minClass)][yLabel].values
 		pos = []
-		pos.append(pontoMedio(minClass, maxClasse))
-
-		dataset.append(arr)
+		if arr.__len__()!= 0:
+			pos.append(pontoMedio(minClass, maxClasse))
+			dataset.append(arr)
 		for i in range(qtClasses):
 			minClass = maxClasse 
 			maxClasse += intervaloClasse
@@ -152,6 +152,7 @@ def violinePlot(df,
 				pos.append(pontoMedio(minClass, maxClasse))
 				dataset.append(arr)
 		# plotando o grafico
+		
 		fig, ax = plt.subplots(figsize=(13,10))
 
 
@@ -169,8 +170,9 @@ def violinePlot(df,
 							showmedians=True)
 		ax.plot(X_train, y_pred   , color='blue', linewidth=3)
 		plt.title(tituloGrafico) 
-		plt.savefig(tituloGrafico+".png",transparent = True)
-		plt.show()
+		plt.savefig(tituloGrafico ,transparent = True)
+		# plt.close(fig)
+		# plt.show()
 	return metricas
 # %% [markdown]
 # lendo dados do csv para um data frame
@@ -182,10 +184,12 @@ def compararDensidadeConexao(
 	df,
 	yLabels=["indicador_rendimento","taxa_aprovacao","nota_saeb_media_padronizada","nota_saeb_lingua_portuguesa","nota_saeb_matematica",],
 	filtrosRealizados = "",
-	imprimir = False
+	imprimir = True
 ):
 	dadosRegressao = []
 	for i in yLabels:
+		if(imprimir):
+			imprimir = "("+str(filtrosRealizados)+")" + "densidade de conexao X "+i.replace("_"," ")
 		aux = violinePlot(df = df,
 				qtClasses = 25,
 				tituloGrafico = imprimir,
@@ -214,5 +218,6 @@ dt = pd.DataFrame(dadosRegressao)
 dt.to_csv("dadosRegressao.csv")
 
 #%%
+Regressao([dfB])
 dt.to_json("dadosRegressao.json",orient="records")	
 dt.to_excel("dadosRegressao.xlsx")
