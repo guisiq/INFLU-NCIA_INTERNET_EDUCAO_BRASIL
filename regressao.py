@@ -16,7 +16,7 @@ from sklearn.preprocessing import Normalizer
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
-#%%
+
 # %%
 def Regressao(X , y , imprimirMetricas = False ,tituloGrafico = False,axis = ('x','y')):
 	X_train, X_test, y_train, y_test = train_test_split(X.reshape(-1,1), y.reshape(-1,1), test_size=0.25)
@@ -69,7 +69,9 @@ def Regressao(X , y , imprimirMetricas = False ,tituloGrafico = False,axis = ('x
 
 def pontoMedio(x,y):
 	return (x+y)/2
-def violinePlot(df,qtClasses,
+def violinePlot(df,
+				qtClasses,
+				imprimirMetricas = False,
 				tituloGrafico = False,
 				axis = ('densidade','taxa aprovacao'),
 				xLabel = "densidade",
@@ -77,8 +79,8 @@ def violinePlot(df,qtClasses,
 	
 	df = df[(np.isnan(df[yLabel]) !=True) & (np.isnan(df[xLabel]) !=True) ]  
 	# df = df[ ]  
-	y = df[xLabel].to_numpy()
-	X = df[yLabel].to_numpy()
+	y = df[yLabel].to_numpy()
+	X = df[xLabel].to_numpy()
 	# y = df[xLabel].to_numpy()
 	# X = df[yLabel].to_numpy()
 	dataset = []
@@ -97,46 +99,46 @@ def violinePlot(df,qtClasses,
 		maxClasse += intervaloClasse
 		arr = df[(df[xLabel] < maxClasse) & (df[xLabel] > minClass)][yLabel].values
 		if arr.__len__()!= 0:
-			pos.append(maxClasse)
+			pos.append(pontoMedio(minClass, maxClasse))
 			dataset.append(arr)
 	# plotando o grafico
 	fig, ax = plt.subplots(figsize=(13,10))
 
 
 	ax.yaxis.grid(True)
-	# ax.violinplot(dataset=dataset)
-	ax.violinplot(dataset, pos,  
+	ax.set_xlabel(axis[0])
+	ax.set_ylabel(axis[1])
+	ax.set_ylim([0, 1.1*y.max()])
+	ax.violinplot(dataset, 
+						pos,  
 						points=200, 
-						widths=2,
+						widths=4,
 						showmeans=True, 
 						showextrema=True, 
 						showmedians=True)
-	plt.xlabel(axis[0])
-	plt.ylabel(axis[1])
-
-	# #regressao
+	#regressao
 
 
-	# X = X.reshape(-1,1)
-	# y = y.reshape(-1,1)
-	# X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3)
-	# regr = LinearRegression().fit(X_train, y_train)
+	X = X.reshape(-1,1)
+	y = y.reshape(-1,1)
+	X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3)
+	regr = LinearRegression().fit(X_train, y_train)
 
-	# # Realizar predição com os dados separados para teste
-	# y_pred = regr.predict(X_train)
-	# metricas = [
-	# 		['Mean squared error:',mean_squared_error(y_train, y_pred)],
-	# 		['R2 Score:' , r2_score(y_train, y_pred)],
-	# 		['MAE:',  mean_absolute_error(y_train, y_pred)],
-	# 		['score', regr.score(X,y)],
-	# 		['intercept_', regr.intercept_],
-	# 		['coef_' ,regr.coef_[0][0]],
-	# 		['funcao','y = '+str(regr.intercept_[0])+'+('+str(regr.coef_[0][0])+'x)']
-	# 	]
-	# ax.plot(X_train, y_pred   , color='blue', linewidth=3)
+	# Realizar predição com os dados separados para teste
+	y_pred = regr.predict(X_train)
+	metricas = [
+			['Mean squared error:',mean_squared_error(y_train, y_pred)],
+			['R2 Score:' , r2_score(y_train, y_pred)],
+			['MAE:',  mean_absolute_error(y_train, y_pred)],
+			['score', regr.score(X,y)],
+			['intercept_', regr.intercept_],
+			['coef_' ,regr.coef_[0][0]],
+			['funcao','y = '+str(regr.intercept_[0])+'+('+str(regr.coef_[0][0])+'x)']
+		]
+	ax.plot(X_train, y_pred   , color='blue', linewidth=3)
 		
-	# if imprimirMetricas == True:
-	# 	print(metricas)
+	if imprimirMetricas == True:
+		print(metricas)
 	if tituloGrafico != False:
 		plt.title(tituloGrafico) 
 		plt.savefig(tituloGrafico+".png",transparent = True)
@@ -145,18 +147,16 @@ def violinePlot(df,qtClasses,
 # %% [markdown]
 # lendo dados do csv para um data frame
 # %%
-# df = pd.read_csv('/content/drive/MyDrive/db.csv')
 dfB = pd.read_csv('db2.csv')
-df = dfB[np.isnan(dfB["taxa_aprovacao"]) !=True ]
-df.isnull().any()
 # %% 
 violinePlot(df = dfB,
-			qtClasses = 5,
+			qtClasses = 25,
 			tituloGrafico = "indicador rendimento X densidade de conexao distribuicao",
 			axis=("densidade de conexao","taxa aprovação "),
 			yLabel = "indicador_rendimento")
+# %%			
 violinePlot(df = dfB,
-			qtClasses = 5,
+			qtClasses = 25,
 			tituloGrafico = "indicador rendimento X densidade de conexao distribuicao",
 			axis=("densidade de conexao","nota saeb matematica"),
 			yLabel = "nota_saeb_matematica")
@@ -165,37 +165,14 @@ violinePlot(df = dfB,
 			tituloGrafico = "nota saeb lingua portuguesa X densidade de conexao distribuicao",
 			axis=("densidade de conexao","nota saeb lingua portuguesa "),
 			yLabel = "nota_saeb_lingua_portuguesa")
-# %%
-
 
 # %%
-# y = df['taxa_aprovacao']
-# X = df['densidade']
-# criando um violin plots
-# %%
-# separando dados em classes
+y = df['taxa_aprovacao']
+X = df['densidade']
 
 
 
-
-# %% imprimindo distribuicao normal da taxa_aprovacao 
-# # %%
-
-# plt.hist(X, 300) 
-# plt.show() 
-
-# plt.hist(y, 300) 
-# plt.show()
-# # %%
-# X = Normalizer().fit([X]).transform([X])
-# y = Normalizer().fit([y]).transform([y])
-
-# # %% 
-# # Selecionando Variáveis para o modelo
-# metricasNormalizadas = Regressao(X,y,True,'taxa aprovação X densidade de conexao normalizado',('taxa aprovação','densidade de conexao'))
-# y = df[['taxa_aprovacao']].to_numpy()
-# X = df[['densidade']].to_numpy()
-# metricasNaoNormalizadas = Regressao(X,y,True,'taxa aprovação X densidade de conexao',('taxa aprovação','densidade de conexao'))
+# imprimindo distribuicao normal da taxa_aprovacao 
 # %%
 
 plt.hist(X, 300) 
@@ -213,3 +190,4 @@ metricasNormalizadas = Regressao(X,y,True,'taxa aprovação X densidade de conex
 y = df[['taxa_aprovacao']].to_numpy()
 X = df[['densidade']].to_numpy()
 metricasNaoNormalizadas = Regressao(X,y,True,'taxa aprovação X densidade de conexao',('taxa aprovação','densidade de conexao'))
+# %%
