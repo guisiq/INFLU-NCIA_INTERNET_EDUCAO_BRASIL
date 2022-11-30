@@ -62,7 +62,7 @@ def Regressao(X , y , imprimirMetricas = False ,tituloGrafico = False,axis = ('x
 		# plt.text(str(metricas))
 		# anchored_text = AnchoredText(str(metricas), loc=2)
 		# plt.ax.add_artist(anchored_text)
-		plt.show()
+		# plt.show()
 		plt.savefig(tituloGrafico,transparent = True)
 	return metricas
 # %%
@@ -75,122 +75,148 @@ def violinePlot(df,
 				tituloGrafico = False,
 				axis = ('densidade','taxa aprovacao'),
 				xLabel = "densidade",
-				yLabel = "taxa_aprovacao"):
+				yLabel = "taxa_aprovacao",
+				normalizar = False):
+	
+	if(tituloGrafico == True):	
+		tituloGrafico = axis[0] +" X "+axis[1]
 	
 	df = df[(np.isnan(df[yLabel]) !=True) & (np.isnan(df[xLabel]) !=True) ]  
+	
 	# df = df[ ]  
 	y = df[yLabel].to_numpy()
 	X = df[xLabel].to_numpy()
+	if(np.count_nonzero(y)<1 or np.count_nonzero(X)<1):
+		return {
+			'Mean squared error:':None,
+			'R2 Score:' :None,
+			'MAE:':None,
+			'score': None,
+			'intercept_':None,
+			'coef_':None,
+			'funcao':None,
+			'relacao':yLabel
+	}
+	widths=5
+	if(normalizar == True):
+		y = Normalizer().fit([y]).transform([y])[0]
+		X = Normalizer().fit([X]).transform([X])[0]
+		df = pd.DataFrame({
+			xLabel:X,
+			yLabel:y
+		})
+		widths=0.004
 	# y = df[xLabel].to_numpy()
 	# X = df[yLabel].to_numpy()
-	dataset = []
-	intervaloClasse = ((X.max()-X.min()) /qtClasses)
-	minClass = 0.0 
-	maxClasse = intervaloClasse
-
-	arr = df[(df[xLabel] < maxClasse) & (df[xLabel] > minClass)][yLabel].values
-	pos = []
-	pos.append(pontoMedio(minClass, maxClasse))
-	print(arr)
-
-	dataset.append(arr)
-	for i in range(qtClasses):
-		minClass = maxClasse 
-		maxClasse += intervaloClasse
-		arr = df[(df[xLabel] < maxClasse) & (df[xLabel] > minClass)][yLabel].values
-		if arr.__len__()!= 0:
-			pos.append(pontoMedio(minClass, maxClasse))
-			dataset.append(arr)
-	# plotando o grafico
-	fig, ax = plt.subplots(figsize=(13,10))
-
-
-	ax.yaxis.grid(True)
-	ax.set_xlabel(axis[0])
-	ax.set_ylabel(axis[1])
-	ax.set_ylim([0, 1.1*y.max()])
-	ax.violinplot(dataset, 
-						pos,  
-						points=200, 
-						widths=4,
-						showmeans=True, 
-						showextrema=True, 
-						showmedians=True)
+	
 	#regressao
 
 
 	X = X.reshape(-1,1)
 	y = y.reshape(-1,1)
-	X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3)
+	X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.1)
 	regr = LinearRegression().fit(X_train, y_train)
 
 	# Realizar predição com os dados separados para teste
 	y_pred = regr.predict(X_train)
-	metricas = [
-			['Mean squared error:',mean_squared_error(y_train, y_pred)],
-			['R2 Score:' , r2_score(y_train, y_pred)],
-			['MAE:',  mean_absolute_error(y_train, y_pred)],
-			['score', regr.score(X,y)],
-			['intercept_', regr.intercept_],
-			['coef_' ,regr.coef_[0][0]],
-			['funcao','y = '+str(regr.intercept_[0])+'+('+str(regr.coef_[0][0])+'x)']
-		]
-	ax.plot(X_train, y_pred   , color='blue', linewidth=3)
+	metricas = {
+			'Mean squared error:':mean_squared_error(y_train, y_pred),
+			'R2 Score:' : r2_score(y_train, y_pred),
+			'MAE:':  mean_absolute_error(y_train, y_pred),
+			'score': regr.score(X,y),
+			'intercept_': regr.intercept_,
+			'coef_': regr.coef_[0][0],
+			'funcao':'y = '+str(regr.intercept_[0])+'+('+str(regr.coef_[0][0])+'x)',
+			'relacao':yLabel
+	}
+	
 		
 	if imprimirMetricas == True:
 		print(metricas)
 	if tituloGrafico != False:
+		dataset = []
+		intervaloClasse = ((X.max()-X.min()) /qtClasses)
+		minClass = 0.0 
+		maxClasse = intervaloClasse
+
+		arr = df[(df[xLabel] < maxClasse) & (df[xLabel] > minClass)][yLabel].values
+		pos = []
+		if arr.__len__()!= 0:
+			pos.append(pontoMedio(minClass, maxClasse))
+			dataset.append(arr)
+		for i in range(qtClasses):
+			minClass = maxClasse 
+			maxClasse += intervaloClasse
+			arr = df[(df[xLabel] < maxClasse) & (df[xLabel] > minClass)][yLabel].values
+			if arr.__len__()!= 0:
+				pos.append(pontoMedio(minClass, maxClasse))
+				dataset.append(arr)
+		# plotando o grafico
+		
+		fig, ax = plt.subplots(figsize=(13,10))
+
+
+		ax.yaxis.grid(True)
+		ax.set_xlabel(axis[0])
+		ax.set_ylabel(axis[1])
+		ax.set_ylim([0, 1.07*y.max()])
+		ax.set_xlim([0, 1.1*X.max()])
+		ax.violinplot(dataset, 
+							pos,  
+							points=200, 
+							widths=widths,
+							showmeans=True, 
+							showextrema=True, 
+							showmedians=True)
+		ax.plot(X_train, y_pred   , color='blue', linewidth=3)
 		plt.title(tituloGrafico) 
-		plt.savefig(tituloGrafico+".png",transparent = True)
-		plt.show()
-	# return metricas
+		plt.savefig(tituloGrafico ,transparent = True)
+		# plt.close(fig)
+		# plt.show()
+	return metricas
 # %% [markdown]
 # lendo dados do csv para um data frame
 # %%
 dfB = pd.read_csv('db2.csv')
-# %% 
-violinePlot(df = dfB,
-			imprimirMetricas=True,
-			qtClasses = 25,
-			tituloGrafico = "indicador rendimento X densidade de conexao distribuicao",
-			axis=("densidade de conexao","taxa aprovação "),
-			yLabel = "indicador_rendimento")
-		
-violinePlot(df = dfB,
-			imprimirMetricas=True,	
-			qtClasses = 25,
-			tituloGrafico = "indicador rendimento X densidade de conexao distribuicao",
-			axis=("densidade de conexao","nota saeb matematica"),
-			yLabel = "nota_saeb_matematica")
-violinePlot(df = dfB,
-			imprimirMetricas=True,
-			qtClasses = 25,
-			tituloGrafico = "nota saeb lingua portuguesa X densidade de conexao distribuicao",
-			axis=("densidade de conexao","nota saeb lingua portuguesa "),
-			yLabel = "nota_saeb_lingua_portuguesa")
-
 # %%
-y = df['taxa_aprovacao']
-X = df['densidade']
-
-
-
-# imprimindo distribuicao normal da taxa_aprovacao 
+def compararDensidadeConexao(
+	df,
+	yLabels=["indicador_rendimento","taxa_aprovacao","nota_saeb_media_padronizada","nota_saeb_lingua_portuguesa","nota_saeb_matematica",],
+	filtrosRealizados = "",
+	imprimir = True
+):
+	dadosRegressao = []
+	for i in yLabels:
+		if(imprimir):
+			imprimir = "("+str(filtrosRealizados)+")" + "densidade de conexao X "+i.replace("_"," ")
+		aux = violinePlot(df = df,
+				qtClasses = 25,
+				tituloGrafico = imprimir,
+				axis=("densidade de conexao",i.replace("_"," ")),
+				yLabel = i,
+				normalizar = True)
+		if(filtrosRealizados != ""):
+			aux['filtro'] = filtrosRealizados
+		dadosRegressao.append(aux) 
+	return dadosRegressao
 # %%
+dadosRegressao = []
+dadosRegressao.extend(compararDensidadeConexao(dfB))
 
-plt.hist(X, 300) 
-plt.show() 
+grupos = dfB.groupby(["sigla_uf"])
+grupos.count()
+for i in  grupos.groups.keys():
+	dadosRegressao.extend(compararDensidadeConexao(grupos.get_group(i),filtrosRealizados = "sigla_uf-"+i))
+	print(i)
+grupos = dfB.groupby(["ano"])
+grupos.count()
+for i in  grupos.groups.keys():
+	dadosRegressao.extend(compararDensidadeConexao(grupos.get_group(i),filtrosRealizados = "Ano-"+str(i)))
+	print(i)
+dt = pd.DataFrame(dadosRegressao)
+dt.to_csv("dadosRegressao.csv")
 
-plt.hist(y, 300) 
-plt.show()
-# %%
-X = Normalizer().fit([X]).transform([X])
-y = Normalizer().fit([y]).transform([y])
-
-
-# Selecionando Variáveis para o modelo
-metricasNormalizadas = Regressao(X,y,True,'taxa aprovação X densidade de conexao normalizado',('taxa aprovação','densidade de conexao'))
-y = df[['taxa_aprovacao']].to_numpy()
-X = df[['densidade']].to_numpy()
-metricasNaoNormalizadas = Regressao(X,y,True,'taxa aprovação X densidade de conexao',('taxa aprovação','densidade de conexao'))
-# %%
+#%%
+Regressao([dfB])
+dt.to_json("dadosRegressao.json",orient="records")	
+dt.to_excel("dadosRegressao.xlsx")
