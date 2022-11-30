@@ -66,9 +66,12 @@ def Regressao(X , y , imprimirMetricas = False ,tituloGrafico = False,axis = ('x
 		plt.savefig(tituloGrafico,transparent = True)
 	return metricas
 # %%
+
+def pontoMedio(x,y):
+	return (x+y)/2
 def violinePlot(df,qtClasses,
 				tituloGrafico = False,
-				axis = ('x','y'),
+				axis = ('densidade','taxa aprovacao'),
 				xLabel = "densidade",
 				yLabel = "taxa_aprovacao"):
 	df = df[np.isnan(df[yLabel]) !=True ]  
@@ -77,9 +80,10 @@ def violinePlot(df,qtClasses,
 	intervaloClasse = ((X.max()-X.min()) /qtClasses)
 	minClass = 0.0 
 	maxClasse = intervaloClasse
+
 	arr = df[(df[xLabel] < maxClasse) & (df[xLabel] > minClass)][yLabel].values
 	pos = []
-	pos.append(maxClasse)
+	pos.append(pontoMedio(minClass, maxClasse))
 	print(arr)
 
 	dataset.append(arr)
@@ -96,14 +100,14 @@ def violinePlot(df,qtClasses,
 
 	ax.yaxis.grid(True)
 	# ax.violinplot(dataset=dataset)
-	ax.violinplot(dataset, pos,  points=200, widths=4,
-						showmeans=True, showextrema=True, showmedians=True)
+	ax.violinplot(dataset, pos,  points=100, widths=4,
+						showmeans=True, showextrema=True, showmedians=False)
 	plt.xlabel(axis[0])
 	plt.ylabel(axis[1])
 	if tituloGrafico != False:
 		plt.title(tituloGrafico) 
+		plt.savefig(tituloGrafico+".png",transparent = True,)
 		plt.show()
-		plt.savefig(tituloGrafico,transparent = True)
 # %% [markdown]
 # lendo dados do csv para um data frame
 # %%
@@ -111,6 +115,22 @@ def violinePlot(df,qtClasses,
 dfB = pd.read_csv('db2.csv')
 df = dfB[np.isnan(dfB["taxa_aprovacao"]) !=True ]
 df.isnull().any()
+# %% 
+violinePlot(df = dfB,
+			qtClasses = 5,
+			tituloGrafico = "indicador rendimento X densidade de conexao distribuicao",
+			axis=("densidade de conexao","taxa aprovação "),
+			yLabel = "indicador_rendimento")
+violinePlot(df = dfB,
+			qtClasses = 5,
+			tituloGrafico = "indicador rendimento X densidade de conexao distribuicao",
+			axis=("densidade de conexao","nota saeb matematica"),
+			yLabel = "nota_saeb_matematica")
+violinePlot(df = dfB,
+			qtClasses = 5,
+			tituloGrafico = "nota saeb lingua portuguesa X densidade de conexao distribuicao",
+			axis=("densidade de conexao","nota saeb lingua portuguesa "),
+			yLabel = "nota_saeb_lingua_portuguesa")
 # %%
 
 
@@ -136,30 +156,9 @@ plt.show()
 X = Normalizer().fit([X]).transform([X])
 y = Normalizer().fit([y]).transform([y])
 
-# %% 
+
 # Selecionando Variáveis para o modelo
 metricasNormalizadas = Regressao(X,y,True,'taxa aprovação X densidade de conexao normalizado',('taxa aprovação','densidade de conexao'))
 y = df[['taxa_aprovacao']].to_numpy()
 X = df[['densidade']].to_numpy()
 metricasNaoNormalizadas = Regressao(X,y,True,'taxa aprovação X densidade de conexao',('taxa aprovação','densidade de conexao'))
-violinePlot(df = dfB,
-			qtClasses=30,
-			tituloGrafico="taxa aprovação X densidade de conexao distribuicao",
-			axis=("densidade de conexao","taxa aprovação ")
-			)
-violinePlot(df = dfB,
-			qtClasses = 30,
-			tituloGrafico = "indicador rendimento X densidade de conexao distribuicao",
-			axis=("densidade de conexao","taxa aprovação "),
-			yLabel = "indicador_rendimento")
-violinePlot(df = dfB,
-			qtClasses = 30,
-			tituloGrafico = "indicador rendimento X densidade de conexao distribuicao",
-			axis=("densidade de conexao","nota saeb matematica"),
-			yLabel = "nota_saeb_matematica")
-violinePlot(df = dfB,
-			qtClasses = 30,
-			tituloGrafico = "nota saeb lingua portuguesa X densidade de conexao distribuicao",
-			axis=("densidade de conexao","nota saeb lingua portuguesa "),
-			yLabel = "nota_saeb_lingua_portuguesa")
-# %%
