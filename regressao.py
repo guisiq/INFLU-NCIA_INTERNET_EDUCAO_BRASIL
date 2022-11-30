@@ -212,4 +212,7 @@ for i in  grupos.groups.keys():
 	print(i)
 dt = pd.DataFrame(dadosRegressao)
 dt.to_csv("dadosRegressao.csv")
-	
+
+#%%
+dt.to_json("dadosRegressao.json",orient="records")	
+dt.to_excel("dadosRegressao.xlsx")
