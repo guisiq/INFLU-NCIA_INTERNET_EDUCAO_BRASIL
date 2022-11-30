@@ -150,18 +150,21 @@ def violinePlot(df,
 dfB = pd.read_csv('db2.csv')
 # %% 
 violinePlot(df = dfB,
+			imprimirMetricas=True,
 			qtClasses = 25,
 			tituloGrafico = "indicador rendimento X densidade de conexao distribuicao",
 			axis=("densidade de conexao","taxa aprovação "),
 			yLabel = "indicador_rendimento")
-# %%			
+		
 violinePlot(df = dfB,
+			imprimirMetricas=True,	
 			qtClasses = 25,
 			tituloGrafico = "indicador rendimento X densidade de conexao distribuicao",
 			axis=("densidade de conexao","nota saeb matematica"),
 			yLabel = "nota_saeb_matematica")
 violinePlot(df = dfB,
-			qtClasses = 5,
+			imprimirMetricas=True,
+			qtClasses = 25,
 			tituloGrafico = "nota saeb lingua portuguesa X densidade de conexao distribuicao",
 			axis=("densidade de conexao","nota saeb lingua portuguesa "),
 			yLabel = "nota_saeb_lingua_portuguesa")
