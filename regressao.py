@@ -208,11 +208,6 @@ grupos.count()
 for i in  grupos.groups.keys():
 	dadosRegressao.extend(compararDensidadeConexao(grupos.get_group(i),filtrosRealizados = "sigla_uf-"+i))
 	print(i)
-grupos = dfB.groupby(["ano"])
-grupos.count()
-for i in  grupos.groups.keys():
-	dadosRegressao.extend(compararDensidadeConexao(grupos.get_group(i),filtrosRealizados = "Ano-"+str(i)))
-	print(i)
 dt = pd.DataFrame(dadosRegressao)
 dt.to_csv("dadosRegressao.csv")
 
